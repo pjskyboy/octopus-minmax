@@ -166,3 +166,7 @@ cython_debug/
 .idea/
 
 .DS_Store
+
+logs
+logs/*
+
