@@ -32,23 +32,24 @@ class BotOrchestrator:
         mode_msg = "ONE_OFF mode enabled" if config.ONE_OFF_RUN else f"Scheduled mode, running at {config.EXECUTION_TIME}"
         ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg} \n Check port {config.WEB_PORT} for dashboard.")
 
-        while True:
-            if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
-                ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Running one-off comparison")
-                self._run_tariff_compare()
-                config.ONE_OFF_EXECUTED = True
-            elif not config.ONE_OFF_RUN:
-                now = datetime.now()
-                current_time = now.strftime("%H:%M")
-                current_minute = now.replace(second=0, microsecond=0)  # Datetime object at minute precision
-                if current_time == config.EXECUTION_TIME and self.last_execution_datetime != current_minute:
-                    self.last_execution_datetime = current_minute
-                    delay = random.randint(10, 900)
-                    ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
-                    time.sleep(delay)
-                    self._run_tariff_compare()
+        # while True:
+            # if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
+        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Running one-off comparison")
+        self._run_tariff_compare()
+        config.ONE_OFF_EXECUTED = True
 
-            time.sleep(30)
+            # elif not config.ONE_OFF_RUN:
+            #     now = datetime.now()
+            #     current_time = now.strftime("%H:%M")
+            #     current_minute = now.replace(second=0, microsecond=0)  # Datetime object at minute precision
+            #     if current_time == config.EXECUTION_TIME and self.last_execution_datetime != current_minute:
+            #         self.last_execution_datetime = current_minute
+            #         delay = random.randint(10, 900)
+            #         ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
+            #         time.sleep(delay)
+            #         self._run_tariff_compare()
+            #
+            # time.sleep(30)
 
     def _initialize(self) -> None:
         logger.debug(f"{__name__}")
@@ -92,6 +93,7 @@ class BotOrchestrator:
         # Current consumption
         current = result.current_tariff_comparison
         if current.cost_breakdown:
+            lines.append("\n\n")
             lines.append(f"Total Consumption today: {current.cost_breakdown.total_kwh:.4f} kWh")
             lines.append(
                 f"Current tariff {current.tariff.display_name}: "
@@ -111,7 +113,7 @@ class BotOrchestrator:
             else:
                 lines.append(f"No cost for {comparison.tariff.display_name}")
 
-        return "\n".join(lines)
+        return "\n".join(lines).join("\n\n")
 
     def _compare_and_switch(self) -> None:
         ns = self.notification_service
